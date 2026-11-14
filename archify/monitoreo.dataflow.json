@@ -1,0 +1,93 @@
+{
+ "schema_version": 1,
+ "diagram_type": "dataflow",
+ "meta": {
+  "title": "Qué medimos y a dónde va",
+  "subtitle": "Cada pooler expone métricas; una sonda sintética prueba desde afuera; Prometheus guarda, Grafana muestra y Alertmanager avisa.",
+  "locale": "es",
+  "quality_profile": "showcase",
+  "output": "public/diagramas/monitoreo.html",
+  "animation": "trace"
+ },
+ "stages": [
+  {
+   "label": "Fuentes"
+  },
+  {
+   "label": "Recolección"
+  },
+  {
+   "label": "Ver y avisar"
+  }
+ ],
+ "nodes": [
+  {
+   "id": "pool",
+   "type": "backend",
+   "label": "Poolers WS",
+   "sublabel": "/metrics",
+   "stage": 0,
+   "row": 0,
+   "tag": "conexiones · latencia"
+  },
+  {
+   "id": "sonda",
+   "type": "external",
+   "label": "Sonda sintética",
+   "sublabel": "handshake real",
+   "stage": 0,
+   "row": 2,
+   "tag": "cada minuto"
+  },
+  {
+   "id": "prom",
+   "type": "database",
+   "label": "Prometheus",
+   "sublabel": "series de tiempo",
+   "stage": 1,
+   "row": 1,
+   "tag": "cada 15 s"
+  },
+  {
+   "id": "graf",
+   "type": "frontend",
+   "label": "Grafana",
+   "sublabel": "tableros",
+   "stage": 2,
+   "row": 0,
+   "tag": "equipo"
+  },
+  {
+   "id": "alert",
+   "type": "security",
+   "label": "Alertas",
+   "sublabel": "reconexiones > umbral",
+   "stage": 2,
+   "row": 2,
+   "tag": "guardia"
+  }
+ ],
+ "flows": [
+  {
+   "from": "pool",
+   "to": "prom",
+   "label": "scrape"
+  },
+  {
+   "from": "sonda",
+   "to": "prom",
+   "label": "resultado"
+  },
+  {
+   "from": "prom",
+   "to": "graf",
+   "label": "consulta"
+  },
+  {
+   "from": "prom",
+   "to": "alert",
+   "label": "regla",
+   "variant": "emphasis"
+  }
+ ]
+}

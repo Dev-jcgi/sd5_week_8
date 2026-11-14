@@ -1,0 +1,97 @@
+{
+ "schema_version": 3,
+ "diagram_type": "lifecycle",
+ "meta": {
+  "title": "Estados de un WebSocket en el navegador",
+  "subtitle": "La propiedad readyState pasa por 4 estados. Un buen cliente agrega un quinto: reconectando, con backoff y jitter.",
+  "locale": "es",
+  "quality_profile": "showcase",
+  "output": "public/diagramas/estados-websocket.html",
+  "animation": "trace"
+ },
+ "mainPath": [
+  "connecting",
+  "open",
+  "closing",
+  "closed"
+ ],
+ "states": [
+  {
+   "id": "connecting",
+   "type": "start",
+   "label": "CONNECTING (0)",
+   "sublabel": "handshake en curso",
+   "tag": "new WebSocket()",
+   "step": "01"
+  },
+  {
+   "id": "open",
+   "type": "active",
+   "label": "OPEN (1)",
+   "sublabel": "onopen · send()",
+   "tag": "mensajes",
+   "step": "02"
+  },
+  {
+   "id": "closing",
+   "type": "waiting",
+   "label": "CLOSING (2)",
+   "sublabel": "close() enviado",
+   "tag": "despedida",
+   "step": "03"
+  },
+  {
+   "id": "closed",
+   "type": "failure",
+   "label": "CLOSED (3)",
+   "sublabel": "onclose(código)",
+   "tag": "fin",
+   "step": "04"
+  },
+  {
+   "id": "retry",
+   "type": "waiting",
+   "label": "Reconectando",
+   "sublabel": "backoff + jitter",
+   "tag": "cliente"
+  }
+ ],
+ "transitions": [
+  {
+   "id": "c-o",
+   "from": "connecting",
+   "to": "open",
+   "label": "101"
+  },
+  {
+   "id": "o-cl",
+   "from": "open",
+   "to": "closing",
+   "label": "close()"
+  },
+  {
+   "id": "cl-c",
+   "from": "closing",
+   "to": "closed",
+   "label": "1000"
+  },
+  {
+   "id": "o-c",
+   "from": "open",
+   "to": "closed",
+   "label": "se corta (1006)"
+  },
+  {
+   "id": "c-r",
+   "from": "closed",
+   "to": "retry",
+   "label": "si no fue adrede"
+  },
+  {
+   "id": "r-c",
+   "from": "retry",
+   "to": "connecting",
+   "label": "nuevo intento"
+  }
+ ]
+}

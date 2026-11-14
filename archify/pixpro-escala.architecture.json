@@ -1,0 +1,261 @@
+{
+ "diagram_type": "architecture",
+ "schema_version": 1,
+ "meta": {
+  "title": "PixPro en tiempo real, listo para escalar",
+  "subtitle": "El servicio de notificaciones de la semana 7, ahora con varios poolers, enrutamiento por Redis y monitoreo. Usa las vistas para recorrerlo.",
+  "locale": "es",
+  "quality_profile": "showcase",
+  "output": "public/diagramas/pixpro-escala.html",
+  "views": [
+   {
+    "id": "v1",
+    "label": "1 · Entrada",
+    "focus": [
+     "spa",
+     "lb",
+     "p1",
+     "p2",
+     "p3"
+    ],
+    "note": "El balanceador reparte conexiones nuevas por menos conexiones; deja pasar Upgrade y su timeout es mayor que el heartbeat."
+   },
+   {
+    "id": "v2",
+    "label": "2 · Enrutamiento",
+    "focus": [
+     "broker",
+     "notif",
+     "redis",
+     "p1",
+     "p2",
+     "p3"
+    ],
+    "note": "El servicio de notificaciones lee lote.events y publica en Redis; cada pooler entrega a sus conectados."
+   },
+   {
+    "id": "v3",
+    "label": "3 · Operación",
+    "focus": [
+     "prom",
+     "sint",
+     "p1",
+     "p2",
+     "p3"
+    ],
+    "note": "Métricas de cada pooler a Prometheus y una sonda sintética que abre un WebSocket real cada minuto."
+   }
+  ]
+ },
+ "components": [
+  {
+   "id": "spa",
+   "type": "frontend",
+   "label": "SPA PixPro",
+   "sublabel": "miles de navegadores",
+   "pos": [
+    30,
+    250
+   ],
+   "size": [
+    180,
+    76
+   ]
+  },
+  {
+   "id": "lb",
+   "type": "security",
+   "label": "Balanceador",
+   "sublabel": "wss · menos conexiones",
+   "pos": [
+    280,
+    250
+   ],
+   "size": [
+    190,
+    76
+   ]
+  },
+  {
+   "id": "p1",
+   "type": "backend",
+   "label": "Pooler WS 1",
+   "sublabel": "conexiones",
+   "pos": [
+    560,
+    90
+   ],
+   "size": [
+    180,
+    70
+   ]
+  },
+  {
+   "id": "p2",
+   "type": "backend",
+   "label": "Pooler WS 2",
+   "sublabel": "conexiones",
+   "pos": [
+    560,
+    250
+   ],
+   "size": [
+    180,
+    70
+   ]
+  },
+  {
+   "id": "p3",
+   "type": "backend",
+   "label": "Pooler WS 3",
+   "sublabel": "conexiones",
+   "pos": [
+    560,
+    410
+   ],
+   "size": [
+    180,
+    70
+   ]
+  },
+  {
+   "id": "redis",
+   "type": "messagebus",
+   "label": "Redis",
+   "sublabel": "pub/sub + presencia",
+   "pos": [
+    850,
+    250
+   ],
+   "size": [
+    180,
+    76
+   ],
+   "brand": "redis"
+  },
+  {
+   "id": "notif",
+   "type": "backend",
+   "label": "Notificaciones",
+   "sublabel": "lógica, sin conexiones",
+   "pos": [
+    850,
+    90
+   ],
+   "size": [
+    200,
+    70
+   ]
+  },
+  {
+   "id": "broker",
+   "type": "messagebus",
+   "label": "Broker",
+   "sublabel": "lote.events",
+   "pos": [
+    1110,
+    90
+   ],
+   "size": [
+    170,
+    70
+   ],
+   "brand": "rabbitmq"
+  },
+  {
+   "id": "prom",
+   "type": "cloud",
+   "label": "Prometheus + Grafana",
+   "sublabel": "métricas y alertas",
+   "pos": [
+    850,
+    410
+   ],
+   "size": [
+    220,
+    70
+   ]
+  },
+  {
+   "id": "sint",
+   "type": "external",
+   "label": "Sonda sintética",
+   "sublabel": "cada minuto",
+   "pos": [
+    1110,
+    410
+   ],
+   "size": [
+    170,
+    70
+   ]
+  }
+ ],
+ "connections": [
+  {
+   "id": "e1",
+   "from": "spa",
+   "to": "lb",
+   "label": "wss://",
+   "variant": "emphasis"
+  },
+  {
+   "id": "e2",
+   "from": "lb",
+   "to": "p1"
+  },
+  {
+   "id": "e3",
+   "from": "lb",
+   "to": "p2"
+  },
+  {
+   "id": "e4",
+   "from": "lb",
+   "to": "p3"
+  },
+  {
+   "id": "e5",
+   "from": "broker",
+   "to": "notif",
+   "label": "ImagenProcesada"
+  },
+  {
+   "id": "e6",
+   "from": "notif",
+   "to": "redis",
+   "label": "PUBLISH"
+  },
+  {
+   "id": "e7",
+   "from": "redis",
+   "to": "p1",
+   "variant": "dashed"
+  },
+  {
+   "id": "e8",
+   "from": "redis",
+   "to": "p2",
+   "variant": "dashed"
+  },
+  {
+   "id": "e9",
+   "from": "redis",
+   "to": "p3",
+   "variant": "dashed"
+  },
+  {
+   "id": "e10",
+   "from": "p3",
+   "to": "prom",
+   "label": "métricas",
+   "variant": "dashed"
+  },
+  {
+   "id": "e11",
+   "from": "sint",
+   "to": "prom",
+   "label": "resultado"
+  }
+ ]
+}

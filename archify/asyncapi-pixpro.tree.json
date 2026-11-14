@@ -1,0 +1,74 @@
+{
+ "schema_version": 1,
+ "diagram_type": "tree",
+ "meta": {
+  "title": "Las partes de un documento AsyncAPI 3.0",
+  "subtitle": "El contrato de los eventos en tiempo real de PixPro: dónde conectarse, qué canales hay, qué se envía y qué se recibe.",
+  "locale": "es",
+  "quality_profile": "showcase",
+  "output": "public/diagramas/asyncapi-pixpro.html"
+ },
+ "nodes": [
+  {
+   "id": "root",
+   "label": "pixpro-tiempo-real.yaml"
+  },
+  {
+   "id": "info",
+   "label": "info",
+   "sublabel": "título y versión",
+   "parent": "root"
+  },
+  {
+   "id": "servers",
+   "label": "servers",
+   "sublabel": "host + protocol: wss",
+   "parent": "root"
+  },
+  {
+   "id": "channels",
+   "label": "channels",
+   "sublabel": "lote/{loteId}",
+   "parent": "root"
+  },
+  {
+   "id": "operations",
+   "label": "operations",
+   "sublabel": "send · receive",
+   "parent": "root"
+  },
+  {
+   "id": "components",
+   "label": "components",
+   "sublabel": "mensajes y esquemas",
+   "parent": "root"
+  },
+  {
+   "id": "op1",
+   "label": "recibirAvance",
+   "sublabel": "action: receive",
+   "parent": "operations"
+  },
+  {
+   "id": "op2",
+   "label": "cancelarLote",
+   "sublabel": "action: send",
+   "parent": "operations"
+  },
+  {
+   "id": "m1",
+   "label": "ImagenProcesada",
+   "sublabel": "payload: hechas, total",
+   "parent": "components"
+  },
+  {
+   "id": "m2",
+   "label": "CancelarLote",
+   "sublabel": "payload: loteId",
+   "parent": "components"
+  }
+ ],
+ "layout": {
+  "direction": "down"
+ }
+}
