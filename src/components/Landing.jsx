@@ -15,9 +15,11 @@ export default function Landing() {
         <h1 className="h-xl">WebSockets <em>a escala</em></h1>
         <p className="exp">El 12 de noviembre Microsoft 365 falló casi un día entero sin que subiera el tráfico. Partimos de ese caso para diseñar un PixPro en tiempo real que aguante miles de conexiones.</p>
         <div className="row-btns">
-          <a className="btn" href="#/actividades">Actividades</a>
+          <a className="btn" href="#/sala">Entrar a la clase</a>
+          <a className="btn ghost" href="#/actividades">Practicar por mi cuenta</a>
           <a className="btn ghost" href="#/presentacion">Ver la presentación</a>
           <a className="btn ghost" href="#/simuladores">Simuladores</a>
+          <a className="btn ghost" href="#/profesor">Soy profesor</a>
         </div>
       </section>
       <section>

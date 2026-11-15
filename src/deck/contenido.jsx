@@ -1,7 +1,7 @@
 import { T, Portada, Arch, Code, Cards, Card, YPixPro, QR } from './piezas.jsx';
 import { Receso, Agenda } from './extras.jsx';
 import { ACTIVIDAD } from '../data/actividades.js';
-import Pregunta from '../components/Pregunta.jsx';
+import { QRClase, PreguntaSlide } from './vivo.jsx';
 import Domino from '../components/Domino.jsx';
 import Tormenta from '../components/Tormenta.jsx';
 import Enrutamiento from '../components/Enrutamiento.jsx';
@@ -30,21 +30,18 @@ function Actividad({ id, como }) {
       <h1>{a.nombre}</h1>
       <Dos r="1.3fr 1fr">
         <div className="d-act-modos">
-          <div><span className="mono">Cómo funciona</span><p>Escanea el código: abre la actividad en tu celular. Respondes, tocas <b>Comprobar</b> y ves al momento si acertaste y por qué.</p></div>
+          <div><span className="mono">Cómo funciona</span><p>Escanea el código (si ya entraste a la clase, no hace falta otra vez). Respondes en tu celular y ves si acertaste y por qué.</p></div>
           <div><span className="mono">En la pantalla</span><p>Proyecto cada pregunta con su tiempo. Cuando acabe, revelo la respuesta y la comentamos.</p></div>
           <div><span className="mono">Qué repasa</span><p>{como}</p></div>
         </div>
-        <div className="d-act-qr"><QR ruta={`#/actividades?a=${id}`} size={250} /><p className="mono">#/actividades · {a.preguntas.length} preguntas</p></div>
+        <QRClase size={250} libre={`#/actividades?a=${id}`} pie={`#/actividades · ${a.preguntas.length} preguntas`} />
       </Dos>
     </div>
   );
 }
 /** Una diapositiva por pregunta, en modo pantalla. */
 const preguntas = (id) => ACTIVIDAD[id].preguntas.map((q) => (
-  <div key={q.id} className="d-pant">
-    <Pregunta q={q} modo="pantalla" />
-    <div className="d-act-qr"><QR ruta={`#/actividades?a=${id}`} size={200} /><p className="mono">¿Aún no entras? Escanea</p></div>
-  </div>
+  <PreguntaSlide key={q.id} q={q} actividad={id} />
 ));
 
 export const COLS = [
@@ -68,9 +65,9 @@ export const COLS = [
           <>Hicimos un servidor WebSocket en <b>Java</b>, en Render, y cada celular abrió <b>una</b> conexión que duró toda la clase.</>,
           <>Funcionó con 30 celulares. Pero PixPro quiere miles de fotógrafos viendo su lote avanzar.</>,
           <>Un servidor tiene límite. Y si es el único, cuando se cae, se cae todo.</>,
-          <>Hoy no hay servidor en vivo: las actividades corren en su celular y se califican solas.</>,
+          <>Escaneen el código <b>una sola vez</b>: con él responden las 4 actividades de hoy desde su celular.</>,
         ]} />
-        <div className="d-act-qr"><QR ruta="#/actividades" size={280} /><p className="mono">#/actividades · déjenla abierta</p></div>
+        <QRClase size={280} pie="#/actividades · déjenla abierta" />
       </Dos>
       <Puente>Para ver qué pasa cuando muchos servidores fallan juntos, empecemos por un caso de esta semana.</Puente>
     </>,

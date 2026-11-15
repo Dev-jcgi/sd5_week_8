@@ -125,3 +125,43 @@
   .torm-carril .comp-nom { grid-row: auto; }
   .sim-tog { font-size: 13px; }
 }
+
+/* ---------- clase en vivo: profesor ---------- */
+.overlay { position: fixed; inset: 0; z-index: 60; background: rgba(6, 7, 11, 0.82); display: grid; place-items: center; padding: 16px; }
+.ov-card { background: var(--surface); border: 1px solid var(--line); border-radius: 22px; padding: 28px; display: grid; gap: 14px; justify-items: center; width: min(560px, 100%); max-height: 92vh; overflow: auto; text-align: center; }
+.qr-grande .qr { width: min(380px, 70vw) !important; height: auto !important; }
+.qr-grande .qr img { width: 100%; height: auto; }
+.pin-xl { font-size: clamp(48px, 9vw, 88px); font-weight: 700; letter-spacing: 0.12em; color: var(--accent); line-height: 1; }
+.rank8 { list-style: none; margin: 0; padding: 0; width: 100%; display: grid; gap: 6px; }
+.rank8 li { display: grid; grid-template-columns: 36px 1fr auto; gap: 12px; align-items: center; padding: 10px 14px; border-radius: 12px; background: var(--surface2); text-align: left; }
+.rank8 li:first-child { outline: 2px solid var(--accent); }
+.cbtn.danger { color: var(--bad); border-color: var(--bad); }
+.pin-g { color: var(--accent); font-size: 1.25em; letter-spacing: 0.08em; }
+
+.vivo { display: grid; gap: 12px; justify-items: center; align-content: start; background: #141823; border: 1px solid #232838; border-radius: 16px; padding: 16px; }
+.vivo .qr { width: 150px; height: 150px; }
+.vivo-pin { font-size: 16px; color: #A7B0BE; text-align: center; }
+.vivo .btn { width: 100%; justify-content: center; }
+.vivo-n { font-size: 22px; color: #D6DBE4; text-align: center; }
+.vivo-n b { font-family: var(--f-display); font-size: 40px; color: var(--accent); }
+.vivo-prog { width: 100%; height: 12px; border-radius: 6px; background: #0D1017; overflow: hidden; }
+.vivo-prog i { display: block; height: 100%; background: var(--accent); transition: width .4s; }
+.vivo-bars { width: 100%; display: grid; gap: 6px; }
+.vb { display: grid; grid-template-columns: minmax(28px, auto) 1fr 34px; gap: 8px; align-items: center; font-size: 16px; color: #C9D1DC; }
+.vb span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 150px; }
+.vb i { display: block; height: 14px; border-radius: 4px; background: #3A4152; min-width: 2px; transition: width .4s; }
+.vb.ok i { background: var(--ok); }
+.vb b { text-align: right; }
+
+/* ---------- clase en vivo: estudiante ---------- */
+.sala8 .espera { padding: 40px 20px; gap: 10px; }
+.pulso { width: 22px; height: 22px; border-radius: 50%; background: var(--accent); margin: 0 auto; animation: pulso 1.6s ease-in-out infinite; }
+@keyframes pulso { 0%, 100% { transform: scale(0.7); opacity: .5; } 50% { transform: scale(1.15); opacity: 1; } }
+.vivo-act { font-size: 12px; color: var(--c); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 8px; }
+.note.enviada { color: var(--ok); }
+.note.ok { color: var(--ok); }
+@media (prefers-reduced-motion: reduce) { .pulso { animation: none; } }
+.reveal.deck .vivo-pin { font-size: 19px; }
+.reveal.deck .vivo .btn { font-size: 22px; padding: 14px 18px; }
+.reveal.deck .vb { font-size: 20px; grid-template-columns: minmax(32px, auto) 1fr 40px; }
+.reveal.deck .vb i { height: 18px; }
