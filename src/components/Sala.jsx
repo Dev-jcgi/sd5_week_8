@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { api } from '../lib/backend.js';
-import { PREGUNTA } from '../lib/sala.js';
+import { PREGUNTA, restante } from '../lib/sala.js';
+import { Reloj } from '../deck/vivo.jsx';
 import { ACTIVIDAD } from '../data/actividades.js';
 import { store, celebrate } from '../lib/fx.js';
 import Pregunta from './Pregunta.jsx';
@@ -53,6 +54,7 @@ export default function Sala() {
   const [room, setRoom] = useState(undefined);
   const [players, setPlayers] = useState([]);
   const [mias, setMias] = useState({});
+  const [, refrescar] = useState(0);
 
   useEffect(() => {
     if (!yo) return;
@@ -92,7 +94,10 @@ export default function Sala() {
     cuerpo = (
       <div className="qcard">
         <p className="mono vivo-act" style={{ '--c': a.color }}>Actividad {a.n} · {a.nombre}</p>
-        <Pregunta key={`${q.id}-${room.seq}`} q={q} revelar={revelada} onResultado={(r) => enviar(r)} />
+        {!revelada && <Reloj room={room} q={q} onFin={() => refrescar((x) => x + 1)} />}
+        {!revelada && !mias[q.id] && restante(room, q) === 0
+          ? <p className="exp center-t">⏱ Se acabó el tiempo. Espera los resultados en la pantalla.</p>
+          : <Pregunta key={`${q.id}-${room.seq}`} q={q} revelar={revelada} onResultado={(r) => enviar(r)} />}
         {room.status === 'question' && mias[q.id] && <p className="note">Tu respuesta llegó al profesor.</p>}
         {revelada && res && q.type !== 'scale' && <p className={`note ${res.ok ? 'ok' : ''}`}>Sumaste {res.pts} puntos.</p>}
       </div>

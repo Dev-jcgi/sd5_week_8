@@ -1,6 +1,9 @@
 import { useEffect, useState } from 'react';
 import { api, MODE } from '../lib/backend.js';
-import { conectarSala, useSala, volverASlides, finalizarSala } from '../lib/sala.js';
+import { conectarSala, useSala, volverASlides, finalizarSala, abrirPregunta, revelarPregunta, respuestasDe, PREGUNTA } from '../lib/sala.js';
+import { ACTIVIDAD } from '../data/actividades.js';
+import { Reloj, Resultados } from '../deck/vivo.jsx';
+import Pregunta from './Pregunta.jsx';
 import { store, newPin, celebrate } from '../lib/fx.js';
 import { COLS } from '../deck/contenido.jsx';
 import { TEMA } from '../data/temas.js';
@@ -80,28 +83,81 @@ function Ranking({ players, onClose }) {
   );
 }
 
+/** Pregunta en vivo a pantalla completa (encima de la presentación), como en la Arena de la semana 6. */
+function EnVivo({ room, q, players, answers, onRevelar }) {
+  const a = ACTIVIDAD[q.act];
+  const i = a.preguntas.findIndex((x) => x.id === q.id);
+  const revelada = room.status === 'reveal';
+  const lista = respuestasDe(answers, q.id);
+  return (
+    <div className="envivo" style={{ '--c': a.color }}>
+      <header>
+        <span className="mono">Actividad {a.n} · {a.nombre} · pregunta {i + 1} de {a.preguntas.length}</span>
+        {!revelada ? <Reloj room={room} q={q} onFin={onRevelar} /> : <span className="mono">Resultados</span>}
+      </header>
+      <div className="envivo-body">
+        <Pregunta key={`${q.id}-${room.seq}`} q={q} modo="pantalla" revelar={revelada} />
+        <aside className="vivo">
+          {!revelada ? (
+            <>
+              <p className="vivo-n"><b>{lista.length}</b> de {players.length} respondieron</p>
+              <div className="vivo-prog"><i style={{ width: `${players.length ? (100 * lista.length) / players.length : 0}%` }} /></div>
+              <p className="vivo-pin mono">Contesten en su celular · PIN {room.pin}</p>
+            </>
+          ) : <Resultados q={q} lista={lista} />}
+        </aside>
+      </div>
+    </div>
+  );
+}
+
 function Presentador({ pin, onSalir }) {
-  const { room, players } = useSala();
+  const { room, players, answers } = useSala();
   const [pos, setPos] = useState({ h: 0, v: 0 });
   const [verQR, setVerQR] = useState(true);
   const [rank, setRank] = useState(false);
   const [fin, setFin] = useState(0); // 0 nada · 1 confirmar · 2 cerrada
+  const [busy, setBusy] = useState(false);
   useEffect(() => { conectarSala(pin); return () => conectarSala(null); }, [pin]);
   const col = COLS[pos.h];
+  const act = col?.kind === 'act' ? ACTIVIDAD[col.id] : null;
+  const st = room?.status;
+  const q = room?.qid && (st === 'question' || st === 'reveal') ? PREGUNTA[room.qid] : null;
+  const run = async (f) => { if (busy) return; setBusy(true); try { await f(); } catch (e) { console.error(e); } setBusy(false); };
+  const lanzar = (a) => run(() => abrirPregunta(a.preguntas[0].id));
+  const revelar = () => q && st === 'question' && run(() => revelarPregunta(q.id));
+  const siguiente = () => {
+    const ps = ACTIVIDAD[q.act].preguntas; const i = ps.findIndex((x) => x.id === q.id);
+    run(() => (i < ps.length - 1 ? abrirPregunta(ps[i + 1].id) : volverASlides()));
+  };
+  const ultima = q && ACTIVIDAD[q.act].preguntas.at(-1).id === q.id;
   const terminar = async () => {
     if (fin === 0) { setFin(1); setTimeout(() => setFin((x) => (x === 1 ? 0 : x)), 4000); return; }
     await finalizarSala(); store.set(PIN_KEY, null); setFin(2); setRank(true); celebrate(true);
   };
-  const enPregunta = room?.status === 'question' || room?.status === 'reveal';
+  const respondieron = q ? respuestasDe(answers, q.id).length : 0;
   return (
     <div className="viewer">
-      <div className="viewer-stage"><Deck onChange={setPos} active={!verQR && !rank} /></div>
+      <div className="viewer-stage">
+        <Deck onChange={setPos} active={!verQR && !rank && !q} />
+        {q && <EnVivo room={room} q={q} players={players} answers={answers} onRevelar={revelar} />}
+      </div>
       <nav className="ctrl">
-        <span className="mono cnum">{col?.tema ? `Tema ${TEMA[col.tema].n} · ${TEMA[col.tema].titulo}` : col?.titulo} · {pos.h + 1}.{pos.v + 1}</span>
+        {!q && <>
+          <span className="mono cnum">{col?.tema ? `Tema ${TEMA[col.tema].n} · ${TEMA[col.tema].titulo}` : col?.titulo} · {pos.h + 1}.{pos.v + 1}</span>
+          {act && <button className="btn" disabled={busy || fin === 2} onClick={() => lanzar(act)}>▶ Lanzar actividad {act.n}</button>}
+        </>}
+        {q && st === 'question' && <>
+          <span className="mono cnum">{respondieron}/{players.length} respondieron</span>
+          <button className="btn" disabled={busy} onClick={revelar}>Revelar respuesta</button>
+        </>}
+        {q && st === 'reveal' && <>
+          <button className="btn" disabled={busy} onClick={siguiente}>{ultima ? 'Volver a la presentación' : 'Siguiente pregunta →'}</button>
+          {!ultima && <button className="cbtn" disabled={busy} onClick={() => run(volverASlides)}>Terminar actividad</button>}
+        </>}
         <span className="grow" />
         <button className="cbtn" onClick={() => setVerQR(true)}>QR · PIN {pin}</button>
         <span className="chip mono">{players.length} conectados</span>
-        {enPregunta && <button className="cbtn" onClick={() => volverASlides()} title="Los celulares vuelven a «Mira la pantalla»">Quitar pregunta</button>}
         <button className="cbtn" onClick={() => setRank(true)}>Ranking</button>
         {fin < 2 && <button className={`cbtn ${fin ? 'danger' : ''}`} onClick={terminar}>{fin ? '¿Seguro? Toca otra vez' : 'Finalizar sesión'}</button>}
         {fin === 2 && <button className="cbtn" onClick={onSalir}>Salir</button>}

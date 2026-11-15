@@ -1,11 +1,11 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { QR } from './piezas.jsx';
 import Pregunta from '../components/Pregunta.jsx';
-import { useSala, respuestasDe, abrirPregunta, revelarPregunta } from '../lib/sala.js';
+import { useSala, restante } from '../lib/sala.js';
 import { LETRAS, puntaje } from '../data/actividades.js';
 
-/* Piezas de diapositiva que cambian cuando el profesor inició sesión y tiene una sala abierta.
-   Sin sala (presentación pública #/presentacion) se comportan como antes: QR de práctica libre. */
+/* Piezas de la clase en vivo. La sala la abre el profesor en #/profesor; sin sala
+   (presentación pública) las diapositivas muestran el QR de práctica libre. */
 
 /** El único QR de la clase: con sala abierta lleva a #/sala con el PIN; sin sala, a la práctica libre. */
 export function QRClase({ size = 260, libre = '#/actividades', pie }) {
@@ -19,7 +19,26 @@ export function QRClase({ size = 260, libre = '#/actividades', pie }) {
   return <div className="d-act-qr"><QR ruta={libre} size={size} /><p className="mono">{pie || libre}</p></div>;
 }
 
-function Resultados({ q, lista }) {
+/** Cuenta regresiva de la pregunta abierta, igual en la pantalla y en los celulares. */
+export function Reloj({ room, q, onFin }) {
+  const [, tic] = useState(0);
+  const s = restante(room, q);
+  useEffect(() => {
+    if (room?.status !== 'question') return;
+    const id = setInterval(() => tic((x) => x + 1), 250);
+    return () => clearInterval(id);
+  }, [room?.status, room?.seq]);
+  useEffect(() => { if (s === 0 && room?.status === 'question') onFin?.(); }, [s === 0, room?.status, room?.seq]);
+  const pct = Math.min(100, (100 * s) / (q?.t || 30));
+  return (
+    <div className={`reloj8 ${s <= 5 ? 'poco' : ''}`} aria-live="off">
+      <b className="mono">{s}</b>
+      <div className="timer"><i style={{ transform: `scaleX(${pct / 100})` }} /></div>
+    </div>
+  );
+}
+
+export function Resultados({ q, lista }) {
   if (!lista.length) return <p className="vivo-n">Nadie respondió.</p>;
   if (q.type === 'scale') {
     return (
@@ -43,53 +62,12 @@ function Resultados({ q, lista }) {
   );
 }
 
-/** Panel lateral del profesor en una diapositiva de pregunta. */
-function Control({ q }) {
-  const { pin, room, players, answers } = useSala();
-  const [busy, setBusy] = useState(false);
-  const run = (f) => async () => { setBusy(true); try { await f(); } catch (e) { console.error(e); } setBusy(false); };
-  const aqui = room?.qid === q.id;
-  const abierta = aqui && room.status === 'question';
-  const revelada = aqui && room.status === 'reveal';
-  const lista = respuestasDe(answers, q.id);
-  return (
-    <div className="vivo">
-      <QR ruta={`#/sala?pin=${pin}`} size={150} />
-      <p className="mono vivo-pin">PIN {pin} · {players.length} conectados</p>
-      {!aqui && <button className="btn" disabled={busy} onClick={run(() => abrirPregunta(q.id))}>📲 Enviar a los celulares</button>}
-      {abierta && (
-        <>
-          <p className="vivo-n"><b>{lista.length}</b> de {players.length} respondieron</p>
-          <div className="vivo-prog"><i style={{ width: `${players.length ? (100 * lista.length) / players.length : 0}%` }} /></div>
-          <button className="btn revelar" disabled={busy} onClick={run(() => revelarPregunta(q.id))}>Revelar respuesta</button>
-        </>
-      )}
-      {revelada && (
-        <>
-          <Resultados q={q} lista={lista} />
-          <button className="btn ghost" disabled={busy} onClick={run(() => abrirPregunta(q.id))}>Repetir pregunta</button>
-        </>
-      )}
-    </div>
-  );
-}
-
-/** Diapositiva de una pregunta: en vivo con sala, o con QR de práctica libre sin ella. */
+/** Diapositiva de una pregunta (repaso en la presentación). Con sala, el QR es el de la clase. */
 export function PreguntaSlide({ q, actividad }) {
-  const { pin, room } = useSala();
-  if (!pin) {
-    return (
-      <div className="d-pant">
-        <Pregunta q={q} modo="pantalla" />
-        <QRClase size={200} libre={`#/actividades?a=${actividad}`} pie="¿Aún no entras? Escanea" />
-      </div>
-    );
-  }
-  const revelada = room?.qid === q.id && room.status === 'reveal';
   return (
     <div className="d-pant">
-      <Pregunta key={`${q.id}-${room?.seq || 0}`} q={q} modo="pantalla" revelar={revelada} />
-      <Control q={q} />
+      <Pregunta q={q} modo="pantalla" />
+      <QRClase size={200} libre={`#/actividades?a=${actividad}`} pie="¿Aún no entras? Escanea" />
     </div>
   );
 }

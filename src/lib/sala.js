@@ -34,7 +34,7 @@ export const respuestasDe = (answers, qid) => Object.entries(answers).filter(([,
 
 export async function abrirPregunta(qid) {
   const { pin, room } = estado;
-  await api.updateRoom(pin, { status: 'question', qid, seq: (room?.seq || 0) + 1 });
+  await api.updateRoom(pin, { status: 'question', qid, seq: (room?.seq || 0) + 1, startedAt: Date.now() });
 }
 
 export async function revelarPregunta(qid) {
@@ -49,6 +49,9 @@ export async function revelarPregunta(qid) {
     await api.updateRoom(pin, { scored: [...(room?.scored || []), qid] });
   }
 }
+
+/** Segundos que quedan de la pregunta abierta (el tiempo lo da q.t). */
+export const restante = (room, q, ahora = Date.now()) => Math.max(0, Math.ceil(((room?.startedAt || ahora) + (q?.t || 30) * 1000 - ahora) / 1000));
 
 export const volverASlides = () => api.updateRoom(estado.pin, { status: 'slide', qid: null });
 export const finalizarSala = () => api.updateRoom(estado.pin, { status: 'fin', qid: null, closed: true });
